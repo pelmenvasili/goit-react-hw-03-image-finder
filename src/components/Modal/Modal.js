@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 
 class Modal extends Component {
   componentDidMount() {
-    document.addEventListener('keydown', this.handleKeyPress);
+    window.addEventListener('keydown', this.handleKeyPress);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeyPress);
+    window.removeEventListener('keydown', this.handleKeyPress);
   }
 
   handleKeyPress = event => {

@@ -4,9 +4,9 @@ import ImageGallery from 'components/ImageGallery/ImageGallery';
 import Modal from 'components/Modal/Modal';
 import Loader from '../Loader/Loader';
 import Button from '../Button/Button';
+import {getImages} from "../../Services/services"
 import css from './App.module.css';
 
-const API_KEY = '34204317-8ae92d59a6bb5fdb3cbc534ec';
 
 class App extends Component {
   state = {
@@ -18,13 +18,14 @@ class App extends Component {
     selectedImage: '',
     backgroundColor: '',
     noResults: false,
+    total: 0,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { searchQuery } = this.state;
+  componentDidUpdate(_, prevState) {
+    const { searchQuery, currentPage} = this.state;
 
     if (searchQuery.trim() !== "" && prevState.searchQuery !== searchQuery) {
-    this.fetchImages();
+    this.fetchImages(searchQuery, currentPage);
     }
   }
   onChangeQuery = query => {
@@ -36,27 +37,26 @@ class App extends Component {
     });
   };
 
-  fetchImages = () => {
+ fetchImages = async () => {
+   try {
     const { searchQuery, currentPage } = this.state;
-    const URL = `https://pixabay.com/api/?q=${searchQuery}&page=${currentPage}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
-
     this.setState({ isLoading: true, backgroundColor: '#155076' });
-
-    fetch(URL)
-      .then(response => response.json())
-      .then(data => {
-        if (data.hits.length === 0) {
-          this.setState({ noResults: true });
-        } else {
-          this.setState(prevState => ({
-            images: [...prevState.images, ...data.hits],
-            currentPage: prevState.currentPage + 1,
-          }));
-        }
-      })
-      .catch(error => console.log(error))
-      .finally(() => this.setState({ isLoading: false }));
-  };
+    const data = await getImages(searchQuery, currentPage);
+    if (data.hits.length === 0) {
+      this.setState({ noResults: true });
+    } else {
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+        currentPage: prevState.currentPage + 1,
+        total: data.totalHits,
+      }));
+    }
+  } catch (error) {
+    alert(error);
+  } finally {
+    this.setState({ isLoading: false });
+  }
+}
 
   onSelectImage = image => {
     this.setState({
@@ -79,9 +79,11 @@ class App extends Component {
       selectedImage,
       backgroundColor,
       noResults,
+      total,
     } = this.state;
-     const shouldRenderLoadMoreButton =
-    images.length > 0;
+
+    const totalPage = total / images.length;
+    const shouldRenderLoadMoreButton = totalPage > 1 && images.length > 0 && !isLoading  & !noResults;
 
     return (
       <div className={css.App} style={{ backgroundColor }}>
@@ -96,7 +98,7 @@ class App extends Component {
 
         {isLoading && <Loader />}
 
-        {shouldRenderLoadMoreButton && !isLoading && (
+        {shouldRenderLoadMoreButton && (
           <Button onClick={this.fetchImages} />
         )}
 

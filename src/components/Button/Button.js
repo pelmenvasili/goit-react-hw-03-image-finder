@@ -1,4 +1,5 @@
 import css from './Button.module.css';
+import PropTypes from 'prop-types';
 
 const Button = ({ onClick, disabled }) => {
   return (
@@ -11,6 +12,11 @@ const Button = ({ onClick, disabled }) => {
       Load more
     </button>
   );
+};
+
+Button.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
 };
 
 export default Button;
