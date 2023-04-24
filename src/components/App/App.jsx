@@ -23,8 +23,8 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { searchQuery } = this.state;
 
-    if (prevState.searchQuery !== searchQuery) {
-      this.fetchImages();
+    if (searchQuery.trim() !== "" && prevState.searchQuery !== searchQuery) {
+    this.fetchImages();
     }
   }
   onChangeQuery = query => {
@@ -80,7 +80,8 @@ class App extends Component {
       backgroundColor,
       noResults,
     } = this.state;
-    const shouldRenderLoadMoreButton = images.length > 0;
+     const shouldRenderLoadMoreButton =
+    images.length > 0;
 
     return (
       <div className={css.App} style={{ backgroundColor }}>
